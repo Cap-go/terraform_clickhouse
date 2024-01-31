@@ -1,0 +1,43 @@
+version: '3.7'
+
+services:
+  clickhouse-master:
+    image: yandex/clickhouse-server
+    networks:
+      clickhouse-net:
+        ipv4_address: 172.22.0.2
+    volumes:
+      - /data/clickhouse-master:/var/lib/clickhouse
+
+  clickhouse-replica1:
+    image: yandex/clickhouse-server
+    networks:
+      clickhouse-net:
+        ipv4_address: 172.22.0.3
+    volumes:
+      - /data/clickhouse-replica1:/var/lib/clickhouse
+
+  clickhouse-replica2:
+    image: yandex/clickhouse-server
+    networks:
+      clickhouse-net:
+        ipv4_address: 172.22.0.4
+    volumes:
+      - /data/clickhouse-replica2:/var/lib/clickhouse
+
+  caddy:
+    image: caddy:2.4.6
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    networks:
+      - clickhouse-net
+
+networks:
+  clickhouse-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/24
