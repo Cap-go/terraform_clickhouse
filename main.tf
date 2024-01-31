@@ -34,6 +34,13 @@ resource "hcloud_server" "clickhouse_server" {
     destination = "/etc/fail2ban/jail.local"
   }
 
+  provisioner "remote-exec" {
+    inline = [
+      "apt update && apt install -y docker.io fail2ban",
+      "mkdir -p /etc/fail2ban/filter.d",
+    ]
+  }
+
   provisioner "file" {
     source      = "fail2ban/clickhouse.conf"
     destination = "/etc/fail2ban/filter.d/clickhouse.conf"
@@ -41,11 +48,10 @@ resource "hcloud_server" "clickhouse_server" {
 
   provisioner "remote-exec" {
     inline = [
-      "apt update && apt install -y docker.io",
       "curl -L \"https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-$(uname -s)-$(uname -m)\" -o /usr/local/bin/docker-compose",
       "chmod +x /usr/local/bin/docker-compose",
       "mkdir -p /data/clickhouse01 /data/clickhouse02 /data/clickhouse03",
-      "cd /root && /usr/local/bin/docker-compose up -d clickhouse-master clickhouse-replica1 clickhouse-replica2"
+      "cd /root && /usr/local/bin/docker-compose up -d clickhouse-master clickhouse-replica1 clickhouse-replica2 fail2ban"
     ]
   }
 }
