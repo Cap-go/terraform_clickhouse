@@ -5,6 +5,10 @@ resource "random_password" "clickhouse_password" {
   override_special = "_%@"
 }
 
+resource "local_file" "clickhouse_env" {
+  filename = "${path.module}/clickhouse.env"
+  content  = "CLICKHOUSE_PASSWORD=${random_password.clickhouse_password.result}"
+}
 
 resource "hcloud_server" "clickhouse_server" {
   name        = "clickhouse-server"
@@ -19,18 +23,24 @@ resource "hcloud_server" "clickhouse_server" {
     private_key = file(pathexpand(var.private_key_path))
     host        = hcloud_server.clickhouse_server.ipv4_address
   }
+
   provisioner "file" {
-    source      = "docker-compose.yml"
+    source      = "${path.module}/clickhouse.env"
+    destination = "/root/clickhouse.env"
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/docker-compose.yml"
     destination = "/root/docker-compose.yml"
   }
 
   provisioner "file" {
-    source      = "Caddyfile"
+    source      = "${path.module}/Caddyfile"
     destination = "/root/Caddyfile"
   }
 
   provisioner "file" {
-    source      = "fail2ban/jail.local"
+    source      = "${path.module}/fail2ban/jail.local"
     destination = "/etc/fail2ban/jail.local"
   }
 
@@ -42,7 +52,7 @@ resource "hcloud_server" "clickhouse_server" {
   }
 
   provisioner "file" {
-    source      = "fail2ban/clickhouse.conf"
+    source      = "${path.module}/fail2ban/clickhouse.conf"
     destination = "/etc/fail2ban/filter.d/clickhouse.conf"
   }
 

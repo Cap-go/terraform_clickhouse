@@ -4,8 +4,8 @@ services:
   clickhouse-master:
     restart: unless-stopped
     image: yandex/clickhouse-server
-    environment:
-      CLICKHOUSE_PASSWORD: "${random_password.clickhouse_password.result}"
+    env_file:
+        - clickhouse.env
     ports:
       - "9000:9000" 
     networks:
@@ -18,8 +18,8 @@ services:
   clickhouse-replica1:
     restart: unless-stopped
     image: yandex/clickhouse-server
-    environment:
-      CLICKHOUSE_PASSWORD: "${random_password.clickhouse_password.result}"
+    env_file:
+        - clickhouse.env
     networks:
       clickhouse-net:
         ipv4_address: 172.22.0.3
@@ -29,8 +29,8 @@ services:
   clickhouse-replica2:
     restart: unless-stopped
     image: yandex/clickhouse-server
-    environment:
-      CLICKHOUSE_PASSWORD: "${random_password.clickhouse_password.result}"
+    env_file:
+        - clickhouse.env
     networks:
       clickhouse-net:
         ipv4_address: 172.22.0.4
