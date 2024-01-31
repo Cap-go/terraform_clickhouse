@@ -14,28 +14,7 @@ services:
     volumes:
       - /data/clickhouse-master:/var/lib/clickhouse
       - /data/clickhouse-master-logs:/var/log/clickhouse-server
-
-  clickhouse-replica1:
-    restart: unless-stopped
-    image: yandex/clickhouse-server
-    env_file:
-        - clickhouse.env
-    networks:
-      clickhouse-net:
-        ipv4_address: 172.22.0.3
-    volumes:
-      - /data/clickhouse-replica1:/var/lib/clickhouse
-
-  clickhouse-replica2:
-    restart: unless-stopped
-    image: yandex/clickhouse-server
-    env_file:
-        - clickhouse.env
-    networks:
-      clickhouse-net:
-        ipv4_address: 172.22.0.4
-    volumes:
-      - /data/clickhouse-replica2:/var/lib/clickhouse
+      - /root/clickhouse.sql:/docker-entrypoint-initdb.d/init.sql 
 
   fail2ban:
     image: crazymax/fail2ban:latest

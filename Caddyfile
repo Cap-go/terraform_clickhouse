@@ -1,12 +1,3 @@
 clickhouse2.capgo.app {
-  @writes {
-    method POST
-    path /.*
-  }
-  reverse_proxy @writes clickhouse-master:8123
-
-  @reads {
-    method GET
-  }
-  reverse_proxy @reads clickhouse-replica1:8123 clickhouse-replica2:8123
+  reverse_proxy clickhouse-master:8123
 }

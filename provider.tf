@@ -9,6 +9,9 @@ terraform {
     random = {
       source  = "hashicorp/random"
     }
+    http = {
+      source  = "hashicorp/http"
+    }
   }
 }
 
@@ -30,4 +33,8 @@ variable "hcloud_token" {
 
 variable "cloudflare_api_key" {
   description = "This is the Cloudflare API key"
+}
+
+data "http" "clickhouse_sql" {
+  url = "https://raw.githubusercontent.com/Cap-go/capgo/main/supabase/clickhouse.sql"
 }

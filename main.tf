@@ -10,6 +10,11 @@ resource "local_file" "clickhouse_env" {
   content  = "CLICKHOUSE_PASSWORD=${random_password.clickhouse_password.result}"
 }
 
+resource "local_file" "clickhouse_sql" {
+  filename = "${path.module}/clickhouse.sql"
+  content  = data.http.clickhouse_sql.body
+}
+
 resource "hcloud_server" "clickhouse_server" {
   name        = "clickhouse-server"
   image       = "ubuntu-22.04"
@@ -52,6 +57,11 @@ resource "hcloud_server" "clickhouse_server" {
   }
 
   provisioner "file" {
+    source      = "${local_file.clickhouse_sql.filename}"
+    destination = "/root/clickhouse.sql"
+  }
+
+  provisioner "file" {
     source      = "${path.module}/fail2ban/clickhouse.conf"
     destination = "/etc/fail2ban/filter.d/clickhouse.conf"
   }
@@ -60,10 +70,10 @@ resource "hcloud_server" "clickhouse_server" {
     inline = [
       "curl -L \"https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-$(uname -s)-$(uname -m)\" -o /usr/local/bin/docker-compose",
       "chmod +x /usr/local/bin/docker-compose",
-      "mkdir -p /data/clickhouse01 /data/clickhouse02 /data/clickhouse03",
-      "cd /root && /usr/local/bin/docker-compose up -d clickhouse-master clickhouse-replica1 clickhouse-replica2 fail2ban"
+      "cd /root && /usr/local/bin/docker-compose up -d clickhouse-master fail2ban"
     ]
   }
+
 }
 
 resource "cloudflare_record" "clickhouse" {
@@ -87,7 +97,7 @@ resource "null_resource" "start_caddy" {
 
     # Start Caddy container
     inline = [
-      "cd /root && /usr/local/bin/docker-compose up -d caddy"
+      "cd /root && /usr/local/bin/docker-compose up -d"
     ]
 
     connection {
