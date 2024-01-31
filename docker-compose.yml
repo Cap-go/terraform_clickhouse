@@ -2,15 +2,24 @@ version: '3.7'
 
 services:
   clickhouse-master:
+    restart: unless-stopped
     image: yandex/clickhouse-server
+    environment:
+      CLICKHOUSE_PASSWORD: "${random_password.clickhouse_password.result}"
+    ports:
+      - "9000:9000" 
     networks:
       clickhouse-net:
         ipv4_address: 172.22.0.2
     volumes:
       - /data/clickhouse-master:/var/lib/clickhouse
+      - /data/clickhouse-master-logs:/var/log/clickhouse-server
 
   clickhouse-replica1:
+    restart: unless-stopped
     image: yandex/clickhouse-server
+    environment:
+      CLICKHOUSE_PASSWORD: "${random_password.clickhouse_password.result}"
     networks:
       clickhouse-net:
         ipv4_address: 172.22.0.3
@@ -18,14 +27,33 @@ services:
       - /data/clickhouse-replica1:/var/lib/clickhouse
 
   clickhouse-replica2:
+    restart: unless-stopped
     image: yandex/clickhouse-server
+    environment:
+      CLICKHOUSE_PASSWORD: "${random_password.clickhouse_password.result}"
     networks:
       clickhouse-net:
         ipv4_address: 172.22.0.4
     volumes:
       - /data/clickhouse-replica2:/var/lib/clickhouse
 
+  fail2ban:
+    image: crazymax/fail2ban:latest
+    restart: unless-stopped
+    network_mode: "host"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - /root/fail2ban/jail.local:/data/jail.d/jail.local:ro
+      - /root/fail2ban/clickhouse.conf:/data/filter.d/clickhouse.conf:ro
+      - /data/clickhouse-master-logs:/var/log/clickhouse-server:ro  # This line is updated
+    environment:
+      - F2B_LOG_TARGET=/var/log/fail2ban.log
+      - F2B_DB_PURGE_AGE=1d
+
   caddy:
+    restart: unless-stopped
     image: caddy:2.4.6
     ports:
       - "80:80"

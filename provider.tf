@@ -6,7 +6,14 @@ terraform {
     cloudflare = {
       source  = "cloudflare/cloudflare"
     }
+    random = {
+      source  = "hashicorp/random"
+    }
   }
+}
+
+provider "random" {
+  # No configuration is needed for the random provider
 }
 
 provider "hcloud" {

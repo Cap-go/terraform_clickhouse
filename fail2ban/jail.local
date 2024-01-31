@@ -1,0 +1,9 @@
+# /path/to/fail2ban/jail.d/jail.local
+[clickhouse]
+enabled  = true
+port     = 8123,9000
+filter   = clickhouse
+logpath  = /var/log/clickhouse-server/clickhouse-server.log
+maxretry = 3
+findtime = 600
+bantime  = 3600
