@@ -1,4 +1,5 @@
 
+#  Generate a random password for the ClickHouse user
 resource "random_password" "clickhouse_password" {
   length           = 64
   special          = true
@@ -29,6 +30,7 @@ resource "local_file" "clickhouse_data_transfer" {
   content  = data.template_file.data_transfer.rendered
 }
 
+# Create a new server
 resource "hcloud_server" "clickhouse_server" {
   name        = "clickhouse-server"
   image       = "ubuntu-22.04"
@@ -96,6 +98,7 @@ resource "hcloud_server" "clickhouse_server" {
 
 }
 
+# Create a DNS record for the new server
 resource "cloudflare_record" "clickhouse" {
   zone_id = var.cloudflare_zone_id
   name    = "clickhouse2.capgo.app"
@@ -105,6 +108,7 @@ resource "cloudflare_record" "clickhouse" {
   depends_on = [hcloud_server.clickhouse_server]
 }
 
+# Start Caddy container after the DNS record is created for SSL certificate generation
 resource "null_resource" "start_caddy" {
   # Depends on the Cloudflare DNS record to ensure it's created first
   depends_on = [cloudflare_record.clickhouse]
