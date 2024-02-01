@@ -14,7 +14,8 @@ services:
     volumes:
       - /data/clickhouse-master:/var/lib/clickhouse
       - /data/clickhouse-master-logs:/var/log/clickhouse-server
-      - /root/clickhouse.sql:/docker-entrypoint-initdb.d/init.sql 
+      - /root/clickhouse.sql:/docker-entrypoint-initdb.d/01_create_tables.sql
+      # - /root/data_transfer.sql:/docker-entrypoint-initdb.d/02_copy_old_data.sql # Comment this to disable data transfer
 
   fail2ban:
     image: crazymax/fail2ban:latest

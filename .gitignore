@@ -34,3 +34,4 @@ override.tf.json
 terraform.rc
 clickhouse.env
 clickhouse.sql
+data_transfer.sql

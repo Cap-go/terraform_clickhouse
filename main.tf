@@ -15,11 +15,26 @@ resource "local_file" "clickhouse_sql" {
   content  = data.http.clickhouse_sql.body
 }
 
+data "template_file" "data_transfer" {
+  template = file("${path.module}/data_transfer.tpl")
+
+  vars = {
+    host     = var.old_clickhouse_host
+    password = var.old_clickhouse_password
+  }
+}
+
+resource "local_file" "clickhouse_data_transfer" {
+  filename = "${path.module}/data_transfer.sql"
+  content  = data.template_file.data_transfer.rendered
+}
+
 resource "hcloud_server" "clickhouse_server" {
   name        = "clickhouse-server"
   image       = "ubuntu-22.04"
   server_type = "cx51"
   location    = "fsn1"
+  backups    = true
   ssh_keys    = ["martindonadieu@gmail.com", "Michal"]
 
   connection {
@@ -59,6 +74,11 @@ resource "hcloud_server" "clickhouse_server" {
   provisioner "file" {
     source      = "${local_file.clickhouse_sql.filename}"
     destination = "/root/clickhouse.sql"
+  }
+
+  provisioner "file" {
+    source      = "${local_file.clickhouse_data_transfer.filename}"
+    destination = "/root/data_transfer.sql"
   }
 
   provisioner "file" {

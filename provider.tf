@@ -38,3 +38,11 @@ variable "cloudflare_api_key" {
 data "http" "clickhouse_sql" {
   url = "https://raw.githubusercontent.com/Cap-go/capgo/main/supabase/clickhouse.sql"
 }
+
+variable "old_clickhouse_host" {
+  description = "The host of the old ClickHouse server"
+}
+
+variable "old_clickhouse_password" {
+  description = "The password for the old ClickHouse server"
+}
