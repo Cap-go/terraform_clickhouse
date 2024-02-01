@@ -117,7 +117,7 @@ resource "null_resource" "start_caddy" {
 
     # Start Caddy container
     inline = [
-      "cd /root && /usr/local/bin/docker-compose up -d"
+      "cd /root && /usr/local/bin/docker-compose up -d caddy"
     ]
 
     connection {
