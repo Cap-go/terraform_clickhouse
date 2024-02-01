@@ -1,11 +1,11 @@
 -- Copy data for the 'devices' table
-INSERT INTO devices SELECT * FROM remoteSecure('${host}:9440', 'default.devices', 'default', '${password}');
+INSERT INTO devices SELECT * FROM remoteSecure('${host}:9440', 'default.devices', 'default', '${password}') where app_id != 'com.kick.mobile';;
 
 -- Copy data for the 'app_versions_meta' table
 INSERT INTO app_versions_meta SELECT * FROM remoteSecure('${host}:9440', 'default.app_versions_meta', 'default', '${password}');
 
 -- Copy data for the 'logs' table
-INSERT INTO logs SELECT * FROM remoteSecure('${host}:9440', 'default.logs', 'default', '${password}');
+INSERT INTO logs SELECT * FROM remoteSecure('${host}:9440', 'default.logs', 'default', '${password}') where app_id != 'com.kick.mobile';;
 
 -- Copy data for the 'devices_u' table
 -- INSERT INTO devices_u SELECT * FROM remoteSecure('${host}:9440', 'default.devices_u', 'default', '${password}');
