@@ -3,7 +3,7 @@ version: '3.7'
 services:
   clickhouse-master:
     restart: unless-stopped
-    image: yandex/clickhouse-server
+    image: clickhouse/clickhouse-server
     env_file:
         - clickhouse.env
     ports:
