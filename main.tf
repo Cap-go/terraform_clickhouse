@@ -12,7 +12,7 @@ resource "local_file" "clickhouse_env" {
 
 resource "local_file" "clickhouse_sql" {
   filename = "${path.module}/clickhouse.sql"
-  content  = data.http.clickhouse_sql.body
+  content  = data.http.clickhouse_sql.response_body
 }
 
 data "template_file" "data_transfer" {
