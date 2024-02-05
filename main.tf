@@ -3,8 +3,8 @@ locals {
   clickhouse_env_hash           = filemd5("${path.module}/clickhouse.env")
   docker_compose_hash           = filemd5("${path.module}/docker-compose.yml")
   terraform_vars_hash           = filemd5("${path.module}/terraform.tfvars")
-  fail2ban_jail_local_hash      = filemd5("${path.module}/fail2ban/jail.local")
-  fail2ban_clickhouse_conf_hash = filemd5("${path.module}/fail2ban/clickhouse.conf")
+  fail2ban_jail_local_hash      = filemd5("${path.module}/fail2ban-jail.local")
+  fail2ban_clickhouse_conf_hash = filemd5("${path.module}/fail2ban-clickhouse.conf")
   clickhouse_sql_hash           = filemd5("${local_file.clickhouse_sql.filename}")
 }
 
@@ -84,11 +84,6 @@ resource "hcloud_server" "clickhouse_server" {
     destination = "/root/Caddyfile"
   }
 
-  provisioner "file" {
-    source      = "${path.module}/fail2ban/jail.local"
-    destination = "/etc/fail2ban/jail.local"
-  }
-
   provisioner "remote-exec" {
     inline = [
       "apt update && apt install -y docker.io fail2ban",
@@ -102,12 +97,17 @@ resource "hcloud_server" "clickhouse_server" {
   }
 
   provisioner "file" {
-    source      = "${path.module}/fail2ban/clickhouse.conf"
+    source      = "${path.module}/fail2ban-clickhouse.conf"
     destination = "/etc/fail2ban/filter.d/clickhouse.conf"
   }
 
   provisioner "file" {
-    source      = local_file.clickhouse_config_xml.filename
+    source      = "${path.module}/fail2ban-jail.local"
+    destination = "/etc/fail2ban/jail.d/jail.local"
+  }
+
+  provisioner "file" {
+    source      = "${local_file.clickhouse_config_xml.filename}"
     destination = "/etc/clickhouse-server/config.xml"
   }
 
@@ -156,7 +156,7 @@ resource "null_resource" "start_caddy" {
   }
 }
 
-resource "null_resource" "docker_compose_restart" {
+resource "null_resource" "files_updates" {
   triggers = {
     clickhouse_env_hash           = local.clickhouse_env_hash
     docker_compose_hash           = local.docker_compose_hash
@@ -166,17 +166,47 @@ resource "null_resource" "docker_compose_restart" {
     clickhouse_sql_hash           = local.clickhouse_sql_hash
   }
 
+  connection {
+    type        = "ssh"
+    user        = "root"
+    private_key = file(pathexpand(var.private_key_path))
+    host        = hcloud_server.clickhouse_server.ipv4_address
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/clickhouse.env"
+    destination = "/root/clickhouse.env"
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/docker-compose.yml"
+    destination = "/root/docker-compose.yml"
+  }
+
+  provisioner "file" {
+    source      = local_file.caddy_config_render.filename
+    destination = "/root/Caddyfile"
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/fail2ban-clickhouse.conf"
+    destination = "/etc/fail2ban/filter.d/clickhouse.conf"
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/fail2ban-jail.local"
+    destination = "/etc/fail2ban/jail.d/jail.local"
+  }
+
+  provisioner "file" {
+    source      = "${local_file.clickhouse_config_xml.filename}"
+    destination = "/etc/clickhouse-server/config.xml"
+  }
+
   provisioner "remote-exec" {
     inline = [
       "cd /root && /usr/local/bin/docker-compose down && /usr/local/bin/docker-compose up -d"
     ]
-
-    connection {
-      type        = "ssh"
-      user        = "root"
-      private_key = file(pathexpand(var.private_key_path))
-      host        = hcloud_server.clickhouse_server.ipv4_address
-    }
   }
 
   depends_on = [
