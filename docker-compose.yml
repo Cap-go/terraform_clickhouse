@@ -8,7 +8,7 @@ services:
         - clickhouse.env
     ports:
       - "9000:9000" 
-      - "9363:9363"
+      - "9440:9440"
     networks:
       clickhouse-net:
         ipv4_address: 172.22.0.2
