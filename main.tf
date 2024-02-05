@@ -11,8 +11,7 @@ locals {
 #  Generate a random password for the ClickHouse user
 resource "random_password" "clickhouse_password" {
   length           = 64
-  special          = true
-  override_special = "_%@"
+  special          = false
 }
 
 data "template_file" "clickhouse_config" {
