@@ -39,10 +39,22 @@ data "http" "clickhouse_sql" {
   url = "https://raw.githubusercontent.com/Cap-go/capgo/main/supabase/clickhouse.sql"
 }
 
-variable "old_clickhouse_host" {
-  description = "The host of the old ClickHouse server"
+variable "clickhouse_domain" {
+  description = "The domain for the ClickHouse server"
+  type        = string
+  # You can provide a default value or leave it empty to require the variable
+  # default     = "default.domain.com"
 }
 
-variable "old_clickhouse_password" {
-  description = "The password for the old ClickHouse server"
+variable "hetzner_ssh_keys" {
+  description = "The list of SSH keys to add to the Hetzner Cloud server"
+  type        = list(string)
+  # You can provide a default value or leave it empty to require the variable
+  # default     = "default.domain.com"
+}
+
+variable "machine_name" {
+  description = "The name of the Hetzner Cloud server"
+  type        = string
+  
 }

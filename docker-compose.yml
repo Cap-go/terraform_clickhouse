@@ -8,6 +8,7 @@ services:
         - clickhouse.env
     ports:
       - "9000:9000" 
+      - "9363:9363"
     networks:
       clickhouse-net:
         ipv4_address: 172.22.0.2
@@ -15,7 +16,8 @@ services:
       - /data/clickhouse-master:/var/lib/clickhouse
       - /data/clickhouse-master-logs:/var/log/clickhouse-server
       - /root/clickhouse.sql:/docker-entrypoint-initdb.d/01_create_tables.sql
-      # - /root/data_transfer.sql:/docker-entrypoint-initdb.d/02_copy_old_data.sql # Comment this to disable data transfer
+      - /etc/clickhouse-server/config.xml:/etc/clickhouse-server/config.xml
+      - caddy_certs:/etc/clickhouse-server/ssl
 
   fail2ban:
     image: crazymax/fail2ban:latest
@@ -27,7 +29,7 @@ services:
     volumes:
       - /root/fail2ban/jail.local:/data/jail.d/jail.local:ro
       - /root/fail2ban/clickhouse.conf:/data/filter.d/clickhouse.conf:ro
-      - /data/clickhouse-master-logs:/var/log/clickhouse-server:ro  # This line is updated
+      - /data/clickhouse-master-logs:/var/log/clickhouse-server:ro
     environment:
       - F2B_LOG_TARGET=/var/log/fail2ban.log
       - F2B_DB_PURGE_AGE=1d
@@ -39,6 +41,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - caddy_certs:/root/.caddy 
       - ./Caddyfile:/etc/caddy/Caddyfile
     networks:
       - clickhouse-net
@@ -49,3 +54,8 @@ networks:
     ipam:
       config:
         - subnet: 172.22.0.0/24
+
+volumes:
+  caddy_data:
+  caddy_config:
+  caddy_certs:

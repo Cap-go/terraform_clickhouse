@@ -1,5 +1,14 @@
 # How to start the project
 
+## Create your env file
+
+```bash
+cp terraform.tfvars.example terraform.tfvars
+```
+
+Then fill the `terraform.tfvars` file with your values
+
+
 ## Install terraform
 
 ### Linux

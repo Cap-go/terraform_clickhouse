@@ -1,3 +1,3 @@
-clickhouse2.capgo.app {
+${domain_name} {
   reverse_proxy clickhouse-master:8123
 }

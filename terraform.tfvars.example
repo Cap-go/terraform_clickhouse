@@ -1,0 +1,10 @@
+cloudflare_zone_id = "****"
+
+cloudflare_api_key = "****"
+
+hcloud_token = "****"
+
+clickhouse_domain = "****" 
+# clickhouse.test.com
+
+machine_name = "clickhouse-prod"

@@ -1,10 +1,47 @@
 
+locals {
+  clickhouse_env_hash           = filemd5("${path.module}/clickhouse.env")
+  docker_compose_hash           = filemd5("${path.module}/docker-compose.yml")
+  terraform_vars_hash           = filemd5("${path.module}/terraform.tfvars")
+  fail2ban_jail_local_hash      = filemd5("${path.module}/fail2ban/jail.local")
+  fail2ban_clickhouse_conf_hash = filemd5("${path.module}/fail2ban/clickhouse.conf")
+  clickhouse_sql_hash           = filemd5("${local_file.clickhouse_sql.filename}")
+}
+
 #  Generate a random password for the ClickHouse user
 resource "random_password" "clickhouse_password" {
   length           = 64
   special          = true
   override_special = "_%@"
 }
+
+data "template_file" "clickhouse_config" {
+  template = file("${path.module}/clickhouse-config.xml.tpl")
+
+  vars = {
+    certificate_file = "/etc/clickhouse-server/ssl/${var.clickhouse_domain}.crt"
+    private_key_file = "/etc/clickhouse-server/ssl/${var.clickhouse_domain}.key"
+  }
+}
+
+data "template_file" "caddy_config" {
+  template = file("${path.module}/Caddyfile.tpl")
+
+  vars = {
+    domain_name = var.clickhouse_domain
+  }
+}
+
+resource "local_file" "clickhouse_config_xml" {
+  filename = "${path.module}/clickhouse-config.xml"
+  content  = data.template_file.clickhouse_config.rendered
+}
+
+resource "local_file" "caddy_config_render" {
+  filename = "${path.module}/Caddyfile"
+  content  = data.template_file.caddy_config.rendered
+}
+
 
 resource "local_file" "clickhouse_env" {
   filename = "${path.module}/clickhouse.env"
@@ -16,28 +53,14 @@ resource "local_file" "clickhouse_sql" {
   content  = data.http.clickhouse_sql.response_body
 }
 
-data "template_file" "data_transfer" {
-  template = file("${path.module}/data_transfer.tpl")
-
-  vars = {
-    host     = var.old_clickhouse_host
-    password = var.old_clickhouse_password
-  }
-}
-
-resource "local_file" "clickhouse_data_transfer" {
-  filename = "${path.module}/data_transfer.sql"
-  content  = data.template_file.data_transfer.rendered
-}
-
 # Create a new server
 resource "hcloud_server" "clickhouse_server" {
-  name        = "clickhouse-server"
+  name        = var.machine_name
   image       = "ubuntu-22.04"
   server_type = "cx51"
   location    = "fsn1"
   backups    = true
-  ssh_keys    = ["martindonadieu@gmail.com", "Michal"]
+  ssh_keys    = var.hetzner_ssh_keys
 
   connection {
     type        = "ssh"
@@ -57,7 +80,7 @@ resource "hcloud_server" "clickhouse_server" {
   }
 
   provisioner "file" {
-    source      = "${path.module}/Caddyfile"
+    source      = local_file.caddy_config_render.filename
     destination = "/root/Caddyfile"
   }
 
@@ -79,13 +102,13 @@ resource "hcloud_server" "clickhouse_server" {
   }
 
   provisioner "file" {
-    source      = "${local_file.clickhouse_data_transfer.filename}"
-    destination = "/root/data_transfer.sql"
+    source      = "${path.module}/fail2ban/clickhouse.conf"
+    destination = "/etc/fail2ban/filter.d/clickhouse.conf"
   }
 
   provisioner "file" {
-    source      = "${path.module}/fail2ban/clickhouse.conf"
-    destination = "/etc/fail2ban/filter.d/clickhouse.conf"
+    source      = local_file.clickhouse_config_xml.filename
+    destination = "/etc/clickhouse-server/config.xml"
   }
 
   provisioner "remote-exec" {
@@ -101,10 +124,10 @@ resource "hcloud_server" "clickhouse_server" {
 # Create a DNS record for the new server
 resource "cloudflare_record" "clickhouse" {
   zone_id = var.cloudflare_zone_id
-  name    = "clickhouse2.capgo.app"
+  name    = var.clickhouse_domain
   value   = hcloud_server.clickhouse_server.ipv4_address
   type    = "A"
-  proxied = true
+  proxied = false
   depends_on = [hcloud_server.clickhouse_server]
 }
 
@@ -131,6 +154,35 @@ resource "null_resource" "start_caddy" {
       host        = hcloud_server.clickhouse_server.ipv4_address
     }
   }
+}
+
+resource "null_resource" "docker_compose_restart" {
+  triggers = {
+    clickhouse_env_hash           = local.clickhouse_env_hash
+    docker_compose_hash           = local.docker_compose_hash
+    terraform_vars_hash           = local.terraform_vars_hash
+    fail2ban_jail_local_hash      = local.fail2ban_jail_local_hash
+    fail2ban_clickhouse_conf_hash = local.fail2ban_clickhouse_conf_hash
+    clickhouse_sql_hash           = local.clickhouse_sql_hash
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "cd /root && /usr/local/bin/docker-compose down && /usr/local/bin/docker-compose up -d"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "root"
+      private_key = file(pathexpand(var.private_key_path))
+      host        = hcloud_server.clickhouse_server.ipv4_address
+    }
+  }
+
+  depends_on = [
+    hcloud_server.clickhouse_server,
+    cloudflare_record.clickhouse,
+  ]
 }
 
 variable "cloudflare_zone_id" {
