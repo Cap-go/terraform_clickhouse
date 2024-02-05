@@ -69,56 +69,12 @@ resource "hcloud_server" "clickhouse_server" {
     host        = hcloud_server.clickhouse_server.ipv4_address
   }
 
-  provisioner "file" {
-    source      = "${path.module}/clickhouse.env"
-    destination = "/root/clickhouse.env"
-  }
-
-  provisioner "file" {
-    source      = "${path.module}/docker-compose.yml"
-    destination = "/root/docker-compose.yml"
-  }
-
-  provisioner "file" {
-    source      = local_file.caddy_config_render.filename
-    destination = "/root/Caddyfile"
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "apt update && apt install -y docker.io fail2ban",
-      "mkdir -p /etc/fail2ban/filter.d",
-    ]
-  }
-
-  provisioner "file" {
-    source      = "${local_file.clickhouse_sql.filename}"
-    destination = "/root/clickhouse.sql"
-  }
-
-  provisioner "file" {
-    source      = "${path.module}/fail2ban-clickhouse.conf"
-    destination = "/etc/fail2ban/filter.d/clickhouse.conf"
-  }
-
-  provisioner "file" {
-    source      = "${path.module}/fail2ban-jail.local"
-    destination = "/etc/fail2ban/jail.d/jail.local"
-  }
-
-  provisioner "file" {
-    source      = "${local_file.clickhouse_config_xml.filename}"
-    destination = "/etc/clickhouse-server/config.xml"
-  }
-
   provisioner "remote-exec" {
     inline = [
       "curl -L \"https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-$(uname -s)-$(uname -m)\" -o /usr/local/bin/docker-compose",
       "chmod +x /usr/local/bin/docker-compose",
-      "cd /root && /usr/local/bin/docker-compose up -d clickhouse-master fail2ban"
     ]
   }
-
 }
 
 # Create a DNS record for the new server
@@ -129,31 +85,6 @@ resource "cloudflare_record" "clickhouse" {
   type    = "A"
   proxied = false
   depends_on = [hcloud_server.clickhouse_server]
-}
-
-# Start Caddy container after the DNS record is created for SSL certificate generation
-resource "null_resource" "start_caddy" {
-  # Depends on the Cloudflare DNS record to ensure it's created first
-  depends_on = [cloudflare_record.clickhouse]
-
-  triggers = {
-    always_run = "${timestamp()}"
-  }
-
-  provisioner "remote-exec" {
-
-    # Start Caddy container
-    inline = [
-      "cd /root && /usr/local/bin/docker-compose up -d caddy"
-    ]
-
-    connection {
-      type        = "ssh"
-      user        = "root"
-      private_key = file(pathexpand(var.private_key_path))
-      host        = hcloud_server.clickhouse_server.ipv4_address
-    }
-  }
 }
 
 resource "null_resource" "files_updates" {
@@ -211,7 +142,6 @@ resource "null_resource" "files_updates" {
 
   depends_on = [
     hcloud_server.clickhouse_server,
-    cloudflare_record.clickhouse,
   ]
 }
 

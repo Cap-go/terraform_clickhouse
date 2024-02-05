@@ -16,7 +16,7 @@ services:
       - /data/clickhouse-master:/var/lib/clickhouse
       - /data/clickhouse-master-logs:/var/log/clickhouse-server
       - /root/clickhouse.sql:/docker-entrypoint-initdb.d/01_create_tables.sql
-      - /etc/clickhouse-server/config.xml:/etc/clickhouse-server/config.xml
+      # - /etc/clickhouse-server/config.xml:/etc/clickhouse-server/config.xml
       - caddy_certs:/etc/clickhouse-server/ssl
 
   # fail2ban:
