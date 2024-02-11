@@ -77,8 +77,8 @@ If you want to relax the ban rule to only block access to specific ClickHouse po
 The settings inside this file roughly approximate the 2 ways by which a malicious user may try to connect to the ClickHouse server.
 
 Either scenario will lead to a ban after 3 attempts:
-- use of a non-existent user and incorrect/no password;
-- use of a valid DB user like `default` but with an incorrect/no password;
+- use of a non-existent user and incorrect/empty password;
+- use of a valid DB user like `default` but with an incorrect/empty password;
 
 The next section will show examples of banning for both types of attempts.
 
@@ -136,21 +136,25 @@ cd /tmp && curl https://clickhouse.com/ | sh
 
 Attempt to login on port `9000` as a non-existent user "test" with an invalid password "wrong-password":
 ```bash
+# 1st try
 ./clickhouse client --host clickhouse.example.com --port 9000 --user test --password wrong-password
 ClickHouse client version 24.2.1.469 (official build).
 Connecting to clickhouse.example.com:9000 as user test.
 Code: 516. DB::Exception: Received from clickhouse.example.com:9000. DB::Exception: test: Authentication failed: password is incorrect, or there is no user with such name.. (AUTHENTICATION_FAILED)
 
+# 2nd try
 ./clickhouse client --host clickhouse.example.com --port 9000 --user test --password wrong-password
 ClickHouse client version 24.2.1.469 (official build).
 Connecting to clickhouse.example.com:9000 as user test.
 Code: 516. DB::Exception: Received from clickhouse.example.com:9000. DB::Exception: test: Authentication failed: password is incorrect, or there is no user with such name.. (AUTHENTICATION_FAILED)
 
+# 3rd try
 ./clickhouse client --host clickhouse.example.com --port 9000 --user test --password wrong-password
 ClickHouse client version 24.2.1.469 (official build).
 Connecting to clickhouse.example.com:9000 as user test.
 Code: 516. DB::Exception: Received from clickhouse.example.com:9000. DB::Exception: test: Authentication failed: password is incorrect, or there is no user with such name.. (AUTHENTICATION_FAILED)
 
+# 4th try
 ./clickhouse client --host clickhouse.example.com --port 9000 --user test --password wrong-password
 ClickHouse client version 24.2.1.469 (official build).
 Connecting to clickhouse.example.com:9000 as user test.
@@ -168,7 +172,7 @@ sudo tail -f /var/log/fail2ban.log
 2024-02-09 08:15:40,716 fail2ban.filter         [19559]: INFO    [clickhouse] Found 18.132.xx.xx - 2024-02-09 08:15:40
 2024-02-09 08:15:45,414 fail2ban.filter         [19559]: INFO    [clickhouse] Found 18.132.xx.xx - 2024-02-09 08:15:45
 2024-02-09 08:15:47,364 fail2ban.filter         [19559]: INFO    [clickhouse] Found 18.132.xx.xx - 2024-02-09 08:15:47
-2024-02-09 08:15:47,793 fail2ban.actions        [19559]: NOTICE  [clickhouse] Ban 18.132.xx.xx
+2024-02-09 08:15:47,793 fail2ban.actions        [19559]: NOTICE  [clickhouse] Ban 18.132.xx.xx   <<=== here ===
 ```
 
 You can review the `iptables` rules that were updated to block your IP:
@@ -205,7 +209,7 @@ sudo iptables -S
 -A DOCKER-ISOLATION-STAGE-2 -j RETURN
 -A DOCKER-USER -p tcp -j f2b-clickhouse
 -A DOCKER-USER -j RETURN
--A f2b-clickhouse -s 18.132.xx.xx/32 -j REJECT --reject-with icmp-port-unreachable
+-A f2b-clickhouse -s 18.132.xx.xx/32 -j REJECT --reject-with icmp-port-unreachable  <<=== here ===
 -A f2b-clickhouse -j RETURN
 ```
 
@@ -230,7 +234,7 @@ sudo fail2ban-client unban 18.132.xx.xx
 ```
 
 ### Second fail2ban test
-Attempt to login on port `9000` as the default database user ("default") with no password:
+Attempt to login on port `9000` as the default database user ("default") with an empty password:
 ```bash
 ./clickhouse client --host clickhouse.example.com --port 9000
 ClickHouse client version 24.2.1.469 (official build).
@@ -253,7 +257,14 @@ Password for user (default):
 Connecting to clickhouse.example.com:9000 as user default.
 Code: 210. DB::NetException: Connection refused (clickhouse.example.com:9000). (NETWORK_ERROR)
 ```
-As before, after the 3rd failed attempt, the error message changed from `Authentication failed` to `Connection refused`.
+As before, after 3 failed attempts, on the 4th attempt the error message changed from `Authentication failed` to `Connection refused`.
+
+
+Once the ban is in place, further attempts from the same IP to connect to a different port such as port 80 is also blocked:
+```bash
+curl clickhouse.example.com
+curl: (7) Failed to connect to clickhouse.example.com port 80 after 77 ms: Connection refused
+```
 
 ## Deployment
 During testing, deployment of the ClickHouse server using `terraform apply` sometimes failed with the following error:
