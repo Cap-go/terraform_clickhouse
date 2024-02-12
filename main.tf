@@ -72,6 +72,12 @@ resource "hcloud_server" "clickhouse_server" {
     inline = [
       "curl -L \"https://github.com/docker/compose/releases/download/v2.2.3/docker-compose-$(uname -s)-$(uname -m)\" -o /usr/local/bin/docker-compose",
       "chmod +x /usr/local/bin/docker-compose",
+      "sudo add-apt-repository universe -y && sudo apt update -y && sudo apt install -y fail2ban",
+      "sudo mkdir -p /data",
+      "sudo mkdir -p /data/clickhouse-master",
+      "sudo mkdir -p /data/clickhouse-master-logs",
+      "sudo chown -R root:root /data",
+      "sudo chmod -R 744 /data",
     ]
   }
 }
@@ -135,7 +141,9 @@ resource "null_resource" "files_updates" {
 
   provisioner "remote-exec" {
     inline = [
-      "cd /root && /usr/local/bin/docker-compose down && /usr/local/bin/docker-compose up -d"
+      "cd /root && /usr/local/bin/docker-compose down && /usr/local/bin/docker-compose up -d",
+      "sudo systemctl enable fail2ban",
+      "sudo systemctl start fail2ban",
     ]
   }
 
