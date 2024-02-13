@@ -16,8 +16,8 @@ services:
       - /data/clickhouse-master:/var/lib/clickhouse
       - /data/clickhouse-master-logs:/var/log/clickhouse-server
       - /root/clickhouse.sql:/docker-entrypoint-initdb.d/01_create_tables.sql
-      # - /etc/clickhouse-server/config.xml:/etc/clickhouse-server/config.xml
-      - caddy_certs:/etc/clickhouse-server/ssl
+      # - /etc/clickhouse-server/config.xml:/etc/clickhouse-server/config.d/config.xml
+      - caddy_data:/etc/clickhouse-server/ssl
 
   caddy:
     container_name: caddy
@@ -29,7 +29,6 @@ services:
     volumes:
       - caddy_data:/data
       - caddy_config:/config
-      - caddy_certs:/root/.caddy 
       - ./Caddyfile:/etc/caddy/Caddyfile
     networks:
       - clickhouse-net
@@ -44,4 +43,3 @@ networks:
 volumes:
   caddy_data:
   caddy_config:
-  caddy_certs:

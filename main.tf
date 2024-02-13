@@ -18,8 +18,8 @@ data "template_file" "clickhouse_config" {
   template = file("${path.module}/clickhouse-config.xml.tpl")
 
   vars = {
-    certificate_file = "/etc/clickhouse-server/ssl/${var.clickhouse_domain}.crt"
-    private_key_file = "/etc/clickhouse-server/ssl/${var.clickhouse_domain}.key"
+    certificate_file = "/etc/clickhouse-server/ssl/caddy/certificates/acme.zerossl.com-v2-dv90/${var.clickhouse_domain}/${var.clickhouse_domain}.crt"
+    private_key_file = "/etc/clickhouse-server/ssl/caddy/certificates/acme.zerossl.com-v2-dv90/${var.clickhouse_domain}/${var.clickhouse_domain}.key"
   }
 }
 
