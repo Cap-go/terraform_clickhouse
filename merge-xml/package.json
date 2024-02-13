@@ -1,0 +1,21 @@
+{
+  "name": "merge-xml",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "run": "npx tsc && node dist/main.js /tmp/A.xml /tmp/B.xml",
+    "run-l": "npx tsc && node dist/main.js ../A.xml ../B.xml /tmp/haha.xml"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@types/node": "^20.11.17",
+    "libxmljs2": "^0.33.0"
+  }
+}

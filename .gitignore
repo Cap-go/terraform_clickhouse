@@ -37,3 +37,8 @@ clickhouse.sql
 data_transfer.sql
 Caddyfile
 clickhouse-config.xml
+/merge-xml/node_modules
+/merge-xml/dist
+/merge-xml/C.xml
+A.xml
+B.xml
