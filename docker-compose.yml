@@ -5,10 +5,13 @@ services:
     container_name: clickhouse-master
     restart: unless-stopped
     image: clickhouse/clickhouse-server
+    user: root
+    depends_on:
+      - caddy
     env_file:
         - clickhouse.env
     ports:
-      - "9000:9000" 
+      - "9000:9000"
       - "9440:9440"
     networks:
       clickhouse-net:
@@ -16,8 +19,8 @@ services:
       - /data/clickhouse-master:/var/lib/clickhouse
       - /data/clickhouse-master-logs:/var/log/clickhouse-server
       - /root/clickhouse.sql:/docker-entrypoint-initdb.d/01_create_tables.sql
-      # - /etc/clickhouse-server/config.xml:/etc/clickhouse-server/config.d/config.xml
-      - caddy_data:/etc/clickhouse-server/ssl
+      - /etc/clickhouse-server/config.xml:/etc/clickhouse-server/config.d/config.xml
+      - caddy_data:/etc/clickhouse-server/ssl:ro
 
   caddy:
     container_name: caddy

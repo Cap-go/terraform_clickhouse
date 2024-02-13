@@ -18,8 +18,8 @@ data "template_file" "clickhouse_config" {
   template = file("${path.module}/clickhouse-config.xml.tpl")
 
   vars = {
-    certificate_file = "/etc/clickhouse-server/ssl/caddy/certificates/acme.zerossl.com-v2-dv90/${var.clickhouse_domain}/${var.clickhouse_domain}.crt"
-    private_key_file = "/etc/clickhouse-server/ssl/caddy/certificates/acme.zerossl.com-v2-dv90/${var.clickhouse_domain}/${var.clickhouse_domain}.key"
+    certificate_file = "/etc/clickhouse-server/ssl/caddy/certificates/acme-v02.api.letsencrypt.org-directory/${var.clickhouse_domain}/${var.clickhouse_domain}.crt"
+    private_key_file = "/etc/clickhouse-server/ssl/caddy/certificates/acme-v02.api.letsencrypt.org-directory/${var.clickhouse_domain}/${var.clickhouse_domain}.key"
   }
 }
 
@@ -44,7 +44,7 @@ resource "local_file" "caddy_config_render" {
 
 resource "local_file" "clickhouse_env" {
   filename = "${path.module}/clickhouse.env"
-  content  = "CLICKHOUSE_PASSWORD=${random_password.clickhouse_password.result}"
+  content  = "CLICKHOUSE_PASSWORD=${random_password.clickhouse_password.result}\nCLICKHOUSE_UID=root\nCLICKHOUSE_GID=root\n"
 }
 
 resource "local_file" "clickhouse_sql" {
