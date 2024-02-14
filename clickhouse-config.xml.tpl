@@ -5,6 +5,7 @@
             <privateKeyFile>${private_key_file}</privateKeyFile>
         </server>
     </openSSL>
+    <tcp_port_secure>9440</tcp_port_secure>
     <prometheus>
         <endpoint>/metrics</endpoint>
         <port>9363</port>
