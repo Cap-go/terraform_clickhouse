@@ -13,4 +13,7 @@
         <asynchronous_metrics>true</asynchronous_metrics>
         <errors>true</errors>
     </prometheus>
+
+    <tcp_port_secure>9440</tcp_port_secure>
+    <https_port>8443</https_port>
 </clickhouse>
