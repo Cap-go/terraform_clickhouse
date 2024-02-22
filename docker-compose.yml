@@ -38,6 +38,8 @@ services:
       - clickhouse-net
 
   supabase-grafana:
+    container_name: grafana
+    restart: unless-stopped
     image: docker.io/capgo/supabase-grafan
     ports:
       - 8081:8080
