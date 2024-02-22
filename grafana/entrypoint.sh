@@ -58,6 +58,7 @@ else
 fi
 
 echo "Setting up clickhouse domain"
+cat /etc/prometheus/prometheus.clickhouse.yml.tpl >> /etc/prometheus/prometheus.yml
 sed -i "s/__CLICKHOUSE_DOMAIN__/$CLICKHOUSE_DOMAIN/g" /etc/prometheus/prometheus.yml
 
 mkdir -p /data/grafana/data 

@@ -25,6 +25,7 @@ COPY --from=prometheus /bin/prometheus /bin/prometheus
 COPY --from=prometheus /usr/share/prometheus /usr/share/prometheus
 COPY prometheus/prometheus.yml /etc/prometheus/prometheus.yml
 COPY prometheus/prometheus.target.yml.tpl /etc/prometheus/prometheus.target.yml.tpl
+COPY prometheus/prometheus.clickhouse.yml.tpl /etc/prometheus/prometheus.clickhouse.yml.tpl
 
 COPY grafana/datasource.yml /etc/grafana/provisioning/datasources/prometheus.yml
 COPY grafana/dashboard.yml /etc/grafana/provisioning/dashboards/dashboard.yml
