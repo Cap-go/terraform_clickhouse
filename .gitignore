@@ -37,3 +37,4 @@ clickhouse.sql
 data_transfer.sql
 Caddyfile
 clickhouse-config.xml
+grafana.env

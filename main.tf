@@ -1,6 +1,7 @@
 
 locals {
   clickhouse_env_hash           = filemd5("${path.module}/clickhouse.env")
+  # grafana_env_hash              = filemd5("${path.module}/grafana.env")
   docker_compose_hash           = filemd5("${path.module}/docker-compose.yml")
   terraform_vars_hash           = filemd5("${path.module}/terraform.tfvars")
   fail2ban_jail_local_hash      = filemd5("${path.module}/fail2ban-jail.local")
@@ -28,6 +29,7 @@ data "template_file" "caddy_config" {
 
   vars = {
     domain_name = var.clickhouse_domain
+    domain_name_grafana = var.grafana_domain
   }
 }
 
@@ -45,6 +47,11 @@ resource "local_file" "caddy_config_render" {
 resource "local_file" "clickhouse_env" {
   filename = "${path.module}/clickhouse.env"
   content  = "CLICKHOUSE_PASSWORD=${random_password.clickhouse_password.result}\nCLICKHOUSE_UID=root\nCLICKHOUSE_GID=root\n"
+}
+
+resource "local_file" "grafana_env" {
+  filename = "${path.module}/grafana.env"
+  content  = "SUPABASE_ACCESS_TOKEN=${var.supabase_access_token}\nSUPABASE_ORGANIZATION_ID=${var.supabase_org_id}\nPASSWORD_PROTECTED=true\nGRAFANA_PASSWORD=${var.grafana_password}\n"
 }
 
 resource "local_file" "clickhouse_sql" {
@@ -92,6 +99,15 @@ resource "cloudflare_record" "clickhouse" {
   depends_on = [hcloud_server.clickhouse_server]
 }
 
+resource "cloudflare_record" "grafana" {
+  zone_id = var.cloudflare_zone_id
+  name    = var.grafana_domain
+  value   = hcloud_server.clickhouse_server.ipv4_address
+  type    = "A"
+  proxied = false
+  depends_on = [hcloud_server.clickhouse_server]
+}
+
 resource "null_resource" "files_updates" {
   triggers = {
     clickhouse_env_hash           = local.clickhouse_env_hash
@@ -112,6 +128,11 @@ resource "null_resource" "files_updates" {
   provisioner "file" {
     source      = "${path.module}/clickhouse.env"
     destination = "/root/clickhouse.env"
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/grafana.env"
+    destination = "/root/grafana.env"
   }
 
   provisioner "file" {
