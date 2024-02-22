@@ -47,6 +47,8 @@ services:
         - grafana.env
     volumes:
       - grafana_data:/data
+    networks:
+      clickhouse-net:
 
 networks:
   clickhouse-net:
