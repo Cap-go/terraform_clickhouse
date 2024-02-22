@@ -2,6 +2,11 @@
 
 set -e
 
+if [ -z "$CLICKHOUSE_DOMAIN" ]; then
+  echo "\$CLICKHOUSE_DOMAIN is not set. Exiting."
+  exit 1
+fi
+
 if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
   echo "Setting up single-project monitoring."
 
@@ -51,6 +56,9 @@ else
     sed -i "s/__SUPABASE_SERVICE_ROLE_KEY__/$SERVICE_ROLE_KEY/g" /etc/prometheus/prometheus.yml
   done
 fi
+
+echo "Setting up clickhouse domain"
+sed -i "s/__CLICKHOUSE_DOMAIN__/$CLICKHOUSE_DOMAIN/g" /etc/prometheus/prometheus.yml
 
 mkdir -p /data/grafana/data 
 mkdir -p /data/grafana/plugins 

@@ -51,7 +51,7 @@ resource "local_file" "clickhouse_env" {
 
 resource "local_file" "grafana_env" {
   filename = "${path.module}/grafana.env"
-  content  = "SUPABASE_ACCESS_TOKEN=${var.supabase_access_token}\nSUPABASE_ORGANIZATION_ID=${var.supabase_org_id}\nPASSWORD_PROTECTED=true\nGRAFANA_PASSWORD=${var.grafana_password}\n"
+  content  = "SUPABASE_ACCESS_TOKEN=${var.supabase_access_token}\nSUPABASE_ORGANIZATION_ID=${var.supabase_org_id}\nPASSWORD_PROTECTED=true\nGRAFANA_PASSWORD=${var.grafana_password}\nCLICKHOUSE_DOMAIN=${var.clickhouse_domain}\n"
 }
 
 resource "local_file" "clickhouse_sql" {
@@ -162,7 +162,7 @@ resource "null_resource" "files_updates" {
 
   provisioner "remote-exec" {
     inline = [
-      "cd /root && /usr/local/bin/docker-compose down && /usr/local/bin/docker-compose up -d",
+      "cd /root && /usr/local/bin/docker-compose down && /usr/local/bin/docker-compose pull && /usr/local/bin/docker-compose up -d",
       "sudo systemctl enable fail2ban",
       "sudo systemctl start fail2ban",
     ]

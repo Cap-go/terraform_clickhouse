@@ -6,8 +6,8 @@
       password: __SUPABASE_SERVICE_ROLE_KEY__
     static_configs:
       - targets: ["__SUPABASE_PROJECT_REF__.supabase.co"]
-  - job_name: clickhouse-__SUPABASE_PROJECT_REF__
+  - job_name: clickhouse
     scheme: https
     metrics_path: "/metrics"
     static_configs:
-      - targets: ["clickhouse2.capgo.app"]
+      - targets: ["__CLICKHOUSE_DOMAIN__"]
