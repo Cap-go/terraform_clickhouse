@@ -4,6 +4,7 @@
 }
 
 ${domain_name} {
+  reverse_proxy /metrics* clickhouse-master:9363
   reverse_proxy clickhouse-master:8123
 }
 
