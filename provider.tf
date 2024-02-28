@@ -58,3 +58,23 @@ variable "machine_name" {
   type        = string
   
 }
+
+variable "backup_s3" {
+  description = "The S3 URL with the folder to backup to"
+  type        = string
+}
+
+variable "backup_s3_folder" {
+  description = "The S3 folder to backup to"
+  type        = string
+}
+
+variable "backup_s3_access_key" {
+  description = "The S3 access key"
+  type        = string
+}
+
+variable "backup_s3_secret_access_key" {
+  description = "The S3 secret access key"
+  type        = string
+}
