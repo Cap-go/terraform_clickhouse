@@ -46,6 +46,26 @@ variable "clickhouse_domain" {
   # default     = "default.domain.com"
 }
 
+variable "grafana_domain" {
+  description = "The domain for the Grafana server"
+  type        = string
+}
+
+variable "grafana_password" {
+  description = "The password for the Grafana server"
+  type        = string
+}
+
+variable "supabase_access_token" {
+  description = "The access token for the Supabase api"
+  type        = string
+}
+
+variable "supabase_org_id" {
+  description = "The organization id for the Supabase api"
+  type        = string
+}
+
 variable "hetzner_ssh_keys" {
   description = "The list of SSH keys to add to the Hetzner Cloud server"
   type        = list(string)

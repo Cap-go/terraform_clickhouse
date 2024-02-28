@@ -283,3 +283,14 @@ The fix is to simply re-run `terraform apply` again:
 ```bash
 terraform apply -auto-approve
 ```
+
+
+# Clickhouse dashboard
+
+
+https://clickhouse2.capgo.app/dashboard
+
+# Clickhouse sql console
+
+https://clickhouse2.capgo.app/play
+

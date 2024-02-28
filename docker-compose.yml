@@ -50,6 +50,19 @@ services:
     networks:
       - clickhouse-net  
 
+  supabase-grafana:
+    container_name: grafana
+    restart: unless-stopped
+    image: docker.io/capgo/supabase-grafana
+    ports:
+      - 8081:8080
+    env_file:
+        - grafana.env
+    volumes:
+      - grafana_data:/data
+    networks:
+      clickhouse-net:
+
 networks:
   clickhouse-net:
     driver: bridge
@@ -60,3 +73,4 @@ networks:
 volumes:
   caddy_data:
   caddy_config:
+  grafana_data:
