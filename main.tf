@@ -48,7 +48,7 @@ resource "local_file" "caddy_config_render" {
 
 resource "local_file" "clickhouse_env" {
   filename = "${path.module}/clickhouse.env"
-  content  = "CLICKHOUSE_PASSWORD=${random_password.clickhouse_password.result}\nCLICKHOUSE_UID=root\nCLICKHOUSE_GID=root\nS3_BACKUP_AWS_ENDPOINT=${var.backup_s3}\nS3_BACKUP_ACCESS_KEY=${var.backup_s3_access_key}\nS3_BACKUP_SECRET_ACCESS_KEY=${var.backup_s3_secret_access_key}\n"
+  content  = "CLICKHOUSE_PASSWORD=${random_password.clickhouse_password.result}\nCLICKHOUSE_UID=root\nCLICKHOUSE_GID=root\nS3_BACKUP_AWS_ENDPOINT=${var.backup_s3}\nS3_BACKUP_ACCESS_KEY=${var.backup_s3_access_key}\nS3_BACKUP_SECRET_ACCESS_KEY=${var.backup_s3_secret_access_key}\nS3_BACKUP_BUCKET=${var.backup_s3_bucket}\n"
 }
 
 resource "local_file" "grafana_env" {

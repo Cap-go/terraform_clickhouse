@@ -8,8 +8,8 @@ stringContain() { case $2 in *$1* ) return 0;; *) return 1;; esac ;}
 if stringContain "BACKUP_CREATED" "$OUTPUT"; then
     echo 'Backup sucessful, deleting yesterday backup ;-)'
     today=$(date +%Y-%m-%d)
-    yesterday="$(date -d "$today - 1 days" +%Y-%m-%d)"
-    aws s3 rm "s3://capgo-test/backups/incremental_$yesterday/" --recursive --endpoint-url $S3_BACKUP_AWS_ENDPOINT
+    yesterday="$(date -d "$today - 2 days" +%Y-%m-%d)"
+    aws s3 rm "s3://$S3_BACKUP_BUCKET/backups/incremental_$yesterday/" --recursive --endpoint-url $S3_BACKUP_AWS_ENDPOINT
     echo "----------------"
 else
     echo "backup failed!!!"
