@@ -21,7 +21,7 @@ data "template_file" "clickhouse_config" {
   vars = {
     certificate_file = "/etc/clickhouse-server/ssl/caddy/certificates/acme-v02.api.letsencrypt.org-directory/${var.clickhouse_domain}/${var.clickhouse_domain}.crt"
     private_key_file = "/etc/clickhouse-server/ssl/caddy/certificates/acme-v02.api.letsencrypt.org-directory/${var.clickhouse_domain}/${var.clickhouse_domain}.key"
-    backup_s3_url_with_folder = "${var.backup_s3}/${var.backup_s3_folder}"
+    backup_s3_url_with_folder = "${var.backup_s3}/${var.backup_s3_bucket}"
     backup_s3_access_key = "${var.backup_s3_access_key}"
     backup_s3_secret_access_key = "${var.backup_s3_secret_access_key}"
   }

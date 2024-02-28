@@ -84,7 +84,7 @@ variable "backup_s3" {
   type        = string
 }
 
-variable "backup_s3_folder" {
+variable "backup_s3_bucket" {
   description = "The S3 folder to backup to"
   type        = string
 }
