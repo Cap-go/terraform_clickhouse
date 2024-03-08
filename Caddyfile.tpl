@@ -9,5 +9,5 @@ ${domain_name} {
 }
 
 ${domain_name_grafana} {
-  reverse_proxy supabase-grafana:8081
+  reverse_proxy supabase-grafana:8080
 }
