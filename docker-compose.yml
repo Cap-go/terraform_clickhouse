@@ -35,7 +35,20 @@ services:
       - caddy_config:/config
       - ./Caddyfile:/etc/caddy/Caddyfile
     networks:
-      - clickhouse-net
+      - clickhouse-net  
+
+  backup_s3:
+    container_name: backup_s3
+    build: ./s3-backup/
+    tty: true
+    env_file:
+      - clickhouse.env
+    depends_on:
+      - clickhouse-master
+    volumes:
+      - /root/s3_backup.log:/root/s3_backup.log
+    networks:
+      - clickhouse-net  
 
   supabase-grafana:
     container_name: grafana
